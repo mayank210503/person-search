@@ -1,51 +1,65 @@
-// components/user-card.tsx
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Phone, Mail } from 'lucide-react'
-import { User } from '@/app/actions/schemas'
-import DeleteButton from './delete-button'
-// import { UserEditDialog } from './user-edit-dialog'
+"use client";
+import React, { useState } from 'react';
 
-interface UserCardProps {
-  user: User
+// Define the User interface
+interface User {
+  name: string;
+  email: string;
 }
 
-console.log("UserCard module loaded");
+// Define the props interface for UserCard
+interface UserCardProps {
+  user: User;
+}
 
-export default function UserCard({ user }: UserCardProps) {
-  if (!user || !user.name) {
-    console.error("UserCard: Invalid user object", user);
-    return <p>Error: Invalid user data</p>;
-  }
+const UserCard: React.FC<UserCardProps> = ({ user }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<User>(user);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSave = () => {
+    // Add API call here if needed to save the updated data
+    setIsEditing(false);
+    console.log("Updated user data:", formData);
+  };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="flex flex-row items-center gap-4">
-        <Avatar className="w-16 h-16">
-          <AvatarFallback>{user.name.split(' ').map((n) => n[0]).join('')}</AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col">
-          <CardTitle className="text-2xl">{user.name}</CardTitle>
-          <Badge variant="secondary" className="w-fit mt-1">ID: {user.id}</Badge>
+    <div className="p-4 border rounded-md shadow-md">
+      {isEditing ? (
+        <div>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="border p-2 rounded mb-2"
+          />
+          <input
+            type="text"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="border p-2 rounded mb-2"
+          />
+          <button onClick={handleSave} className="bg-green-500 text-white p-2 rounded">
+            Save
+          </button>
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div className="flex items-center gap-2">
-          <Phone className="w-4 h-4 text-muted-foreground" />
-          <span>{user.phoneNumber}</span>
+      ) : (
+        <div>
+          <p><strong>Name:</strong> {user.name}</p>
+          <p><strong>Email:</strong> {user.email}</p>
+          <button onClick={() => setIsEditing(true)} className="bg-blue-500 text-white p-2 rounded">
+            Edit
+          </button>
         </div>
-        {user.email && (
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-muted-foreground" />
-            <span>{user.email}</span>
-          </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <DeleteButton userId={user.id} />
-        {/* <UserEditDialog user={user} /> */}
-      </CardFooter>
-    </Card>
+      )}
+    </div>
   );
-}
+};
+
+export default UserCard;
